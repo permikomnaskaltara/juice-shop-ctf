@@ -11,6 +11,9 @@ build/
 *.eml
 out/
 
+# VS Code
+.vscode/
+
 # NPM
 node_modules/
 npm-debug.log.*
