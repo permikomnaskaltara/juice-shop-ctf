@@ -4,22 +4,22 @@ chai.use(require('chai-things'))
 chai.use(require('chai-subset'))
 chai.use(require('chai-as-promised'))
 const expect = chai.expect
-const generateData = require('../../lib/generateData')
+const generateData = require('../../lib/generators/ctfd')
 const options = require('../../lib/options')
 
 describe('Generated data', () => {
   let challenges
   beforeEach(() => {
     challenges = {
-      c1: {id: 1, name: 'c1', description: 'C1', difficulty: 1, category: '1'},
-      c2: {id: 2, name: 'c2', description: 'C2', difficulty: 2, category: '2'},
-      c3: {id: 3, name: 'c3', description: 'C3', difficulty: 3, category: '2'},
-      c4: {id: 4, name: 'c4', description: 'C4', difficulty: 4, category: '3'},
-      c5: {id: 5, name: 'c5', description: 'C5', difficulty: 5, category: '1'}
+      c1: { id: 1, name: 'c1', description: 'C1', difficulty: 1, category: '1' },
+      c2: { id: 2, name: 'c2', description: 'C2', difficulty: 2, category: '2' },
+      c3: { id: 3, name: 'c3', description: 'C3', difficulty: 3, category: '2' },
+      c4: { id: 4, name: 'c4', description: 'C4', difficulty: 4, category: '3' },
+      c5: { id: 5, name: 'c5', description: 'C5', difficulty: 5, category: '1' }
     }
   })
 
-  it('should consist of one object pushed into challenges.results per challenge', () => expect(generateData(challenges, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+  it('should consist of one object pushed into challenges.results per challenge', () => expect(generateData(challenges)).to.eventually.deep.include(
     {
       challenges: {
         results: [
@@ -32,7 +32,7 @@ describe('Generated data', () => {
       }
     }))
 
-  it('should consist of one object pushed into flagKeys.results per challenge', () => expect(generateData(challenges, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+  it('should consist of one object pushed into flagKeys.results per challenge', () => expect(generateData(challenges)).to.eventually.deep.include(
     {
       flagKeys: {
         results: [
@@ -45,7 +45,7 @@ describe('Generated data', () => {
       }
     }))
 
-  xit('should consist of one object pushed into flagKeys.results per challenge', () => expect(generateData(challenges, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.containSubset(
+  xit('should consist of one object pushed into flagKeys.results per challenge', () => expect(generateData(challenges)).to.eventually.deep.containSubset(
     {
       flagKeys: {
         results: [
@@ -58,16 +58,16 @@ describe('Generated data', () => {
       }
     }))
 
-  it('should be empty when given no challenges', () => expect(generateData({}, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+  it('should be empty when given no challenges', () => expect(generateData({})).to.eventually.deep.include(
     { challenges: { results: [] } }
   ))
 
-  it('should log generator error to console', () => expect(generateData({c1: undefined}, options.noTextHints, options.noHintUrls, '')).to.be.rejectedWith('Failed to generate challenge data! Cannot read property \'difficulty\' of undefined'))
+  it('should log generator error to console', () => expect(generateData({ c1: undefined })).to.be.rejectedWith('Failed to generate challenge data! Cannot read property \'difficulty\' of undefined'))
 
   it('should push an object into hints.results for a text hint defined on a challenge', () => {
     challenges.c3.hint = 'hint'
     return Promise.all([
-      expect(generateData(challenges, options.freeTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.freeTextHints })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -75,7 +75,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.paidTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.paidTextHints })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -89,7 +89,7 @@ describe('Generated data', () => {
   it('should push an object into hints.results for a text hint URL defined on a challenge', () => {
     challenges.c3.hintUrl = 'hintUrl'
     return Promise.all([
-      expect(generateData(challenges, options.noTextHints, options.freeHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHintUrls: options.freeHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -97,7 +97,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.noTextHints, options.paidHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHintUrls: options.paidHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -112,7 +112,7 @@ describe('Generated data', () => {
     challenges.c3.hint = 'hint'
     challenges.c3.hintUrl = 'hintUrl'
     return Promise.all([
-      expect(generateData(challenges, options.freeTextHints, options.freeHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.freeTextHints, insertHintUrls: options.freeHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -121,7 +121,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.paidTextHints, options.freeHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.paidTextHints, insertHintUrls: options.freeHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -130,7 +130,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.freeTextHints, options.paidHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.freeTextHints, insertHintUrls: options.paidHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -139,7 +139,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.paidTextHints, options.paidHintUrls, '')).to.eventually.deep.include(
+      expect(generateData(challenges, { insertHints: options.paidTextHints, insertHintUrls: options.paidHintUrls })).to.eventually.deep.include(
         {
           hints: {
             results: [
@@ -154,7 +154,7 @@ describe('Generated data', () => {
   it('should not insert a text hint when corresponding hint option is not chosen', () => {
     challenges.c1.hint = 'hint'
     challenges.c2.hint = 'hint'
-    return expect(generateData(challenges, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+    return expect(generateData(challenges)).to.eventually.deep.include(
       { hints: { results: [] } }
     )
   })
@@ -162,7 +162,7 @@ describe('Generated data', () => {
   it('should not insert a hint URL when corresponding hint option is not chosen', () => {
     challenges.c1.hintUrl = 'hintUrl'
     challenges.c2.hintUrl = 'hintUrl'
-    return expect(generateData(challenges, options.noTextHints, options.noHintUrls, '')).to.eventually.deep.include(
+    return expect(generateData(challenges)).to.eventually.deep.include(
       { hints: { results: [] } }
     )
   })
@@ -174,7 +174,7 @@ describe('Generated data', () => {
     challenges.c4.hint = 'hint'
     challenges.c5.hint = 'hint'
     return Promise.all([
-      expect(generateData(challenges, options.freeTextHints, options.noHintUrls, '')).to.eventually.not.deep.include(
+      expect(generateData(challenges, { insertHints: options.freeTextHints })).to.eventually.not.deep.include(
         {
           hints: {
             results: [
@@ -182,7 +182,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.paidTextHints, options.noHintUrls, '')).to.eventually.not.deep.include(
+      expect(generateData(challenges, { insertHints: options.paidTextHints })).to.eventually.not.deep.include(
         {
           hints: {
             results: [
@@ -200,7 +200,7 @@ describe('Generated data', () => {
     challenges.c4.hintUrl = 'hintUrl'
     challenges.c5.hintUrl = 'hintUrl'
     return Promise.all([
-      expect(generateData(challenges, options.freeTextHints, options.noHintUrls, '')).to.eventually.not.deep.include(
+      expect(generateData(challenges, { insertHints: options.freeTextHints })).to.eventually.not.deep.include(
         {
           hints: {
             results: [
@@ -208,7 +208,7 @@ describe('Generated data', () => {
             ]
           }
         }),
-      expect(generateData(challenges, options.paidTextHints, options.noHintUrls, '')).to.eventually.not.deep.include(
+      expect(generateData(challenges, { insertHints: options.paidTextHints })).to.eventually.not.deep.include(
         {
           hints: {
             results: [

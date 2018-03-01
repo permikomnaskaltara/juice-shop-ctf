@@ -2,12 +2,19 @@ const inquirer = require('inquirer')
 const colors = require('colors') // eslint-disable-line no-unused-vars
 const fetchSecretKey = require('./lib/fetchSecretKey')
 const fetchChallenges = require('./lib/fetchChallenges')
-const generateData = require('./lib/generateData')
-const writeToZipFile = require('./lib/writeToZipFile')
 const options = require('./lib/options')
+
+const generateCTFExport = require('./lib/generators/')
 
 const juiceShopCtfCli = async () => {
   const questions = [
+    {
+      type: 'list',
+      name: 'ctfFramework',
+      message: 'CTF Framework the generated files should be for?',
+      choices: [options.ctfdFramework, options.fbctfFramework],
+      default: 0
+    },
     {
       type: 'input',
       name: 'juiceShopUrl',
@@ -37,22 +44,21 @@ const juiceShopCtfCli = async () => {
   ]
 
   console.log()
-  console.log('Generate ZIP-archive to import into ' + 'CTFd'.bold + ' (≥1.1.0) with the ' + 'OWASP Juice Shop'.bold + ' challenges')
+  console.log('Generate Game Export  with all the juicy OWASP Juice Shop Challenges!')
+  console.log()
 
   try {
-    const {ctfKey, juiceShopUrl, insertHints, insertHintUrls} = await inquirer.prompt(questions)
+    const { ctfFramework, ctfKey, juiceShopUrl, insertHints, insertHintUrls } = await inquirer.prompt(questions)
     const [secretKey, challenges] = await Promise.all([
       fetchSecretKey(ctfKey),
       fetchChallenges(juiceShopUrl)
     ])
-    const data = await generateData(challenges, insertHints, insertHintUrls, secretKey)
-    const file = await writeToZipFile(data)
 
-    console.log()
-    console.log('ZIP-archive written to ' + file)
-    console.log()
-    console.log('For a step-by-step guide to import the ZIP-archive into ' + 'CTFd'.bold + ', please refer to')
-    console.log('https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/part1/ctf.html#running-ctfd'.bold)
+    await generateCTFExport(ctfFramework, challenges, {
+      insertHints,
+      insertHintUrls,
+      ctfKey: secretKey
+    })
   } catch (error) {
     console.log(error.message.red)
   }
